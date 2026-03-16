@@ -17,7 +17,7 @@ graph TD
     D --> E[HTML Cleaning & Chunking]
     E -->|Sentence Transformer| F[(ChromaDB Vector Store)]
     
-    G[User Query] -->|Pillar B: Retrieval| H[Vector Similarity Search]
+    G[User Query] -->|B(Pillar B: Retrieval)| H[Vector Similarity Search]
     F -->|Relevant Context| H
     H --> I[Azure OpenAI GPT-4o-mini]
     I --> J[Generated Answer]
