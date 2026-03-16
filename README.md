@@ -35,9 +35,11 @@ graph TD
 - **Environment:** Hosted on internal Linux Server (Gershwin)
 
 ## 📁 Project Structure
+```
 Yuan_Yuan_RAG/
 ├── Data_Ingestion_Pipeline.ipynb   # Pillar A: Data factory & Vectorization
 ├── Yuan_Yuan_RAG_Interface.ipynb   # Pillar B: Chat UI & BERT Evaluation
 ├── rag_util.py                     # Shared utility functions (API, Cleaning, Logic)
 ├── .env.example                    # Template for required environment variables
 └── requirements.txt                # List of Python dependencies
+```

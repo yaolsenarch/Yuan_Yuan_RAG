@@ -4,7 +4,7 @@ import json
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
 import os
-BASE_URL = "https://confluence.healthpartners.com/confluence/rest/api"
+BASE_URL = "https://confluence.YOUR-COMPANY.com/confluence/rest/api"
 USERNAME=os.getenv("USER")
 PASSWORD=os.getenv("PSW")
 # Load the model (this will download ~90MB on first run)
