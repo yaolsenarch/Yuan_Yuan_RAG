@@ -17,7 +17,7 @@ graph TD
     D --> E[HTML Cleaning & Chunking]
     E -->|Sentence Transformer| F[(ChromaDB Vector Store)]
     
-    G[User Query] -->| (Pillar B: Retrieval)| H[Vector Similarity Search]
+    G[User Query] -->| Pillar B: Retrieval| H[Vector Similarity Search]
     F -->|Relevant Context| H
     H --> I[Azure OpenAI GPT-4o-mini]
     I --> J[Generated Answer]
@@ -43,7 +43,7 @@ To ensure the LLM receives meaningful context, this project moves away from gene
     2. Filter out short fragments (<50 characters). 
     3. Detect oversized paragraphs (>1500 characters).
     4. Recursively split large blocks using overlapping chunking.
-    Parameters:
+    * Parameters:
     - paragraph min length: 50 characters
     - max chunk size: 1500 characters
     - fallback split: 1000 characters with 100 character overlap
