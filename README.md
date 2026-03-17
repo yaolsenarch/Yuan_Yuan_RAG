@@ -17,7 +17,7 @@ graph TD
     D --> E[HTML Cleaning & Chunking]
     E -->|Sentence Transformer| F[(ChromaDB Vector Store)]
     
-    G[User Query] -->| Pillar B: Retrieval| H[Vector Similarity Search]
+    G[User Query] -->| (Pillar B: Retrieval)| H[Vector Similarity Search]
     F -->|Relevant Context| H
     H --> I[Azure OpenAI GPT-4o-mini]
     I --> J[Generated Answer]
@@ -34,6 +34,23 @@ graph TD
 - **Embeddings/Evaluation:** Sentence-Transformers (BERT)
 - **Environment:** Hosted on internal Linux Server (Gershwin)
 
+## 📐 Data Engineering & Chunking Strategy
+To ensure the LLM receives meaningful context, this project moves away from generic "fixed-length" chunking in favor of a **Context-Aware Paragraph Strategy**:
+
+* **Chunking Method:** Semantic Paragraph Splitting.
+* **Strategy:** Instead of cutting text at a rigid character limit (which often splits code blocks or tables in half), the system splits data at double-newlines (`\n\n`). 
+    1. Split cleaned Confluence text into logical paragraphs. 
+    2. Filter out short fragments (<50 characters). 
+    3. Detect oversized paragraphs (>1500 characters).
+    4. Recursively split large blocks using overlapping chunking.
+    Parameters:
+    - paragraph min length: 50 characters
+    - max chunk size: 1500 characters
+    - fallback split: 1000 characters with 100 character overlap
+* **Average Chunk Size:** ~500 - 1,000 characters.
+* **Overlap:** 0% (Intentional). By splitting at logical paragraph breaks and using high-quality metadata, we maintain the "unity" of technical instructions without the "noise" of repeated text. 
+* **Why?** Technical documentation (like SAS migration steps) is often written in self-contained steps. Paragraph-based splitting ensures that a single instruction or code block is never "decapitated," providing the LLM with a complete thought every time, while preventing embedding truncation in the all-MiniLM-L6-v2 model.
+
 ## 📁 Project Structure
 ```
 Yuan_Yuan_RAG/
@@ -43,3 +60,13 @@ Yuan_Yuan_RAG/
 ├── .env.example                    # Template for required environment variables
 └── requirements.txt                # List of Python dependencies
 ```
+
+## 📝 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.<br>
+📧 Contact<br>
+
+Author: Yuan-Yuan Olsen<br>
+Email: yuanyuan.a.olsen@healthpartners.com <br>
+Project Link: https://github.com/yaolsenarch/Yuan_Yuan_RAG

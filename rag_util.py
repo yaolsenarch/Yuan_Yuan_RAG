@@ -4,9 +4,16 @@ import json
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
 import os
-BASE_URL = "https://confluence.YOUR-COMPANY.com/confluence/rest/api"
+from dotenv import load_dotenv
+
+# 1. this finds the .env file and loads those variables into the environment so we can access them with os.getenv()
+load_dotenv()
+
+# 2. Map the environment variables to Python variables
+BASE_URL = os.getenv("BASE_URL")
 USERNAME=os.getenv("USER")
-PASSWORD=os.getenv("PSW")
+PASSWORD=os.getenv("PSW")  
+
 # Load the model (this will download ~90MB on first run)
 print("Loading Embedding Model...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -136,6 +143,37 @@ def chunk_text(text, chunk_size=1000, overlap=100):
         start += (chunk_size - overlap)
     return chunks
 
+def chunk_text_by_paragraph(text, min_length=50, max_length=1500):
+    """
+    Improved Strategy: Slices text into logical paragraphs 
+    to preserve technical context and code blocks.
+
+    Hardened Chunking: Slices text into logical paragraphs with 
+    size guardrails to prevent 'junk' chunks or 'oversized' context.
+    """
+    # 1. Split by double-newlines (standard paragraph marker)
+    raw_paragraphs = text.split('\n\n')
+    refined_chunks = []
+
+    for p in raw_paragraphs:
+        p = p.strip()
+        
+        # Guardrail A: Ignore tiny fragments (e.g., "See also:", "Table 1")
+        if len(p) < min_length:
+            continue
+            
+        # Guardrail B: Split oversized paragraphs 
+        # (prevents embedding truncation in all-MiniLM-L6-v2)
+        if len(p) > max_length:
+            # If a paragraph is a monster, fallback to a recursive split
+            sub_chunks = chunk_text(p, chunk_size=1000, overlap=100)
+            refined_chunks.extend(sub_chunks)
+        else:
+            refined_chunks.append(p)
+    
+    print(f"   ✂️ Processed {len(raw_paragraphs)} raw segments into {len(refined_chunks)} quality chunks.")
+    return refined_chunks
+     
 def create_embeddings(chunks_list):
     print(f"\nStep 4: Vectorizing {len(chunks_list)} chunks...")
     
