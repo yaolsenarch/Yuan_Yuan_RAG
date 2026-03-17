@@ -43,10 +43,10 @@ To ensure the LLM receives meaningful context, this project moves away from gene
     2. Filter out short fragments (<50 characters). 
     3. Detect oversized paragraphs (>1500 characters).
     4. Recursively split large blocks using overlapping chunking.
-    * Parameters:
-    - paragraph min length: 50 characters
-    - max chunk size: 1500 characters
-    - fallback split: 1000 characters with 100 character overlap
+    *  **Parameters:**
+        - paragraph min length: 50 characters
+        - max chunk size: 1500 characters
+        - fallback split: 1000 characters with 100 character overlap
 * **Average Chunk Size:** ~500 - 1,000 characters.
 * **Overlap:** 0% (Intentional). By splitting at logical paragraph breaks and using high-quality metadata, we maintain the "unity" of technical instructions without the "noise" of repeated text. 
 * **Why?** Technical documentation (like SAS migration steps) is often written in self-contained steps. Paragraph-based splitting ensures that a single instruction or code block is never "decapitated," providing the LLM with a complete thought every time, while preventing embedding truncation in the all-MiniLM-L6-v2 model.
