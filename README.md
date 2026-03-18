@@ -7,7 +7,7 @@ This project was developed to centralize and democratize "tribal knowledge" with
 
 ## 🏛️ Architecture
 The system is divided into a two-pillar architecture to separate data engineering from the user interface:
-
+```
 Data Layer
     ↓
 Embedding Layer
@@ -21,7 +21,7 @@ Prompt Assembly
 LLM
     ↓
 Evaluation Layer
-
+```
 ### 🔄 System Workflow
 ```mermaid
 graph TD
