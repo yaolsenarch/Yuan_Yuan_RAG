@@ -8,6 +8,20 @@ This project was developed to centralize and democratize "tribal knowledge" with
 ## 🏛️ Architecture
 The system is divided into a two-pillar architecture to separate data engineering from the user interface:
 
+Data Layer
+    ↓
+Embedding Layer
+    ↓
+Vector Store
+    ↓
+Retrieval Layer
+    ↓
+Prompt Assembly
+    ↓
+LLM
+    ↓
+Evaluation Layer
+
 ### 🔄 System Workflow
 ```mermaid
 graph TD
@@ -48,8 +62,18 @@ To ensure the LLM receives meaningful context, this project moves away from gene
         - max chunk size: 1500 characters
         - fallback split: 1000 characters with 100 character overlap
 * **Average Chunk Size:** ~500 - 1,000 characters.
-* **Overlap:** 0% (Intentional). By splitting at logical paragraph breaks and using high-quality metadata, we maintain the "unity" of technical instructions without the "noise" of repeated text. 
+* **Overlap:** None for standard paragraph chunks. Oversized paragraphs are recursively split using 1000-character chunks with 100 character overlap to preserve continuity. By splitting at logical paragraph breaks and using high-quality metadata, we maintain the "unity" of technical instructions without the "noise" of repeated text. 
 * **Why?** Technical documentation (like SAS migration steps) is often written in self-contained steps. Paragraph-based splitting ensures that a single instruction or code block is never "decapitated," providing the LLM with a complete thought every time, while preventing embedding truncation in the all-MiniLM-L6-v2 model.
+
+## Context Packing Strategy
+During retrieval, the system dynamically assembles the LLM context window:
+
+1. Convert user query to an embedding
+2. Retrieve top-k relevant chunks from ChromaDB
+3. Concatenate chunks into a context block
+4. Stop when the token budget is reached
+
+This ensures the prompt remains within Azure OpenAI context limits while maximizing relevant information density.
 
 ## 📁 Project Structure
 ```
