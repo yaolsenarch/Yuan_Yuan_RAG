@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
 import os
 from dotenv import load_dotenv
+import tiktoken
 
 # 1. this finds the .env file and loads those variables into the environment so we can access them with os.getenv()
 load_dotenv()
@@ -317,3 +318,13 @@ def get_page_by_title(space_key, title):
                 "html": data.get("body", {}).get("storage", {}).get("value", "")
             }
     return None
+
+def count_tokens(text, model_name="gpt-4o-mini"):
+    """Returns the number of tokens in a text string."""
+    try:
+        encoding = tiktoken.encoding_for_model(model_name)
+    except KeyError:
+        # Fallback if the specific model isn't in the library yet
+        encoding = tiktoken.get_encoding("cl100k_base") 
+        
+    return len(encoding.encode(text))

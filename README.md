@@ -65,15 +65,18 @@ To ensure the LLM receives meaningful context, this project moves away from gene
 * **Overlap:** None for standard paragraph chunks. Oversized paragraphs are recursively split using 1000-character chunks with 100 character overlap to preserve continuity. By splitting at logical paragraph breaks and using high-quality metadata, we maintain the "unity" of technical instructions without the "noise" of repeated text. 
 * **Why?** Technical documentation (like SAS migration steps) is often written in self-contained steps. Paragraph-based splitting ensures that a single instruction or code block is never "decapitated," providing the LLM with a complete thought every time, while preventing embedding truncation in the all-MiniLM-L6-v2 model.
 
-## Context Packing Strategy
-During retrieval, the system dynamically assembles the LLM context window:
+## 💂‍♂️ Token Budget Management
+To prevent "Context Overload" and ensure high-speed responses, the system employs a strict **Token Guardrail**:
 
-1. Convert user query to an embedding
-2. Retrieve top-k relevant chunks from ChromaDB
-3. Concatenate chunks into a context block
-4. Stop when the token budget is reached
+1. **Rank:** Chunks are ranked by semantic similarity to the user query.
+2. **Calculate:** Using `tiktoken`, the system calculates the exact token footprint of each candidate.
+3. **Prune:** Context is assembled piece-by-piece until the ~3,000 token limit is reached.
+* **Benefit:** This prevents the LLM from getting "Lost in the Middle" and keeps Azure OpenAI costs and latency optimized.
 
-This ensures the prompt remains within Azure OpenAI context limits while maximizing relevant information density.
+## 🛡️ Reliability & Trust (Evaluation Layer)
+Unlike standard chatbots, this system includes a **Self-Correction Loop**:
+* **Citations:** Every claim is tied to a `SOURCE` Confluence ID.
+* **BERT Confidence:** A local transformer model compares the AI's answer to the original question. If the similarity score is low, the system flags the response with a ⚠️ Moderate/Low Confidence warning.
 
 ## 📁 Project Structure
 ```
