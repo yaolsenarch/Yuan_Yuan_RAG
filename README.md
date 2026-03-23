@@ -78,6 +78,36 @@ Unlike standard chatbots, this system includes a **Self-Correction Loop**:
 * **Citations:** Every claim is tied to a `SOURCE` Confluence ID.
 * **BERT Confidence:** A local transformer model compares the AI's answer to the original question. If the similarity score is low, the system flags the response with a ⚠️ Moderate/Low Confidence warning.
 
+## 🔧 Future Work: Advanced Retrieval & Ranking 💂‍♂️
+To further evolve from a standard RAG into a high-precision discovery engine, the following architectural enhancements are planned:
+
+### 1. Cross-Encoder Re-ranking
+* **Current State:** Uses Bi-Encoders (Cosine Similarity) for fast, approximate retrieval.
+* **Future State:** Implement a **Cross-Encoder** as a secondary filter.
+    * **Step 1:** Retrieve Top-20 chunks via vector search.
+    * **Step 2:** Pass (Query + Chunk) pairs through a Cross-Encoder for joint evaluation.
+    * **Step 3:** Pass only the Top-5 "vetted" chunks to the LLM.
+* **Benefit:** Dramatically reduces noise and improves semantic precision.
+
+### 2. Hybrid Search (Dense + Sparse)
+* **Concept:** Merging **Vector Embeddings** (Dense) with **BM25 Keyword Matching** (Sparse).
+* **Benefit:** Better handling of technical "edge cases," rare acronyms, and exact-match queries that vectors sometimes overlook.
+
+### 3. Context Compression & Summarization
+* **Concept:** When multiple relevant chunks are found, use a "Small LLM" to compress or summarize them before passing them to the main Azure OpenAI prompt.
+* **Benefit:** Maximizes the **Token Budget** by removing redundant phrasing while keeping the facts.
+
+### 4. Query Expansion & Multi-Query Retrieval
+* **Concept:** Automatically generate 3-5 variations of the user's question to capture different "angles" of the documentation.
+* **Benefit:** Improves **Recall**—ensuring that even if a user asks a question "the wrong way," the system still finds the right page.
+
+### 5. Metadata-Aware Boosting
+* **Concept:** Implement "recency boosting" or "source weighting." For example, a chunk from the `Python Set Up Guide` might be weighted higher than a "Draft" page.
+* **Benefit:** Provides a more controllable and "opinionated" retrieval experience.
+
+### 6. Learning-to-Rank (LTR) 📈
+* **Concept:** Training a lightweight model to learn from user "Thumbs Up/Down" feedback to optimize the ranking function over time.
+
 ## 📁 Project Structure
 ```
 Yuan_Yuan_RAG/
