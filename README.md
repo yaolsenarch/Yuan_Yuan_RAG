@@ -41,6 +41,21 @@ graph TD
 - **Pillar A (Ingestion):** A recursive crawler that discovers Confluence pages, cleans HTML content, and generates 384-dimensional vector embeddings using a local `all-MiniLM-L6-v2` transformer.
 - **Pillar B (Interface):** A RAG-based chat interface utilizing **Azure OpenAI (GPT-4o-mini)**. It includes a local **BERT-based semantic evaluator** to score the quality of AI responses.
 
+## 🛡️ Data Integrity & Deduplication
+A common challenge in RAG systems is "Vector Bloat"—where re-running an ingestion pipeline creates duplicate embeddings for the same content. This system employs a Three-Tier Deduplication Strategy to ensure a "Golden State" of 54 unique chunks:
+
+Deterministic Content IDs: Instead of using generic auto-incrementing IDs (e.g., id_0, id_1), we generate IDs based on the Confluence Page ID and Paragraph Index (e.g., doc_12345_p0).
+
+Result: If a page is re-indexed, the new vectors accurately overwrite the old ones instead of stacking.
+
+The "Flush-on-Sync" Protocol: The run_full_sync() function performs an atomic delete_collection before each master rebuild.
+
+Result: This clears out "orphaned" chunks from pages that may have been deleted or moved in Confluence.
+
+Recursive "Seen" Registry: During the multi-tier crawl (Favorites → Children → Linked Pages), the system maintains a processed_ids set.
+
+Result: Even if a page is linked multiple times across different documents, it is only cleaned, chunked, and vectorized once.
+
 ## 🛠️ Tech Stack
 - **Language:** Python
 - **Vector Database:** ChromaDB
@@ -79,9 +94,9 @@ Unlike standard chatbots, this system includes a **Self-Correction Loop**:
 * **BERT Confidence:** A local transformer model compares the AI's answer to the original question. If the similarity score is low, the system flags the response with a ⚠️ Moderate/Low Confidence warning.
 
 ## 🔧 Future Work: Advanced Retrieval & Ranking 💂‍♂️
-To further evolve from a standard RAG into a high-precision discovery engine, the following architectural enhancements are planned:
+To further evolve from a baseline RAG implementation into a high-precision discovery engine, the following architectural enhancements are planned:
 
-### 1. Cross-Encoder Re-ranking
+### 1. Cross-Encoder Re-ranking (industry-standard approach used in production systems like search engines)
 * **Current State:** Uses Bi-Encoders (Cosine Similarity) for fast, approximate retrieval.
 * **Future State:** Implement a **Cross-Encoder** as a secondary filter.
     * **Step 1:** Retrieve Top-20 chunks via vector search.
