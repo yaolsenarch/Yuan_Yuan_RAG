@@ -44,11 +44,11 @@ graph TD
 ## 🛡️ Data Integrity & Deduplication
 A common challenge in RAG systems is "Vector Bloat"—where re-running an ingestion pipeline creates duplicate embeddings for the same content. This system employs a Three-Tier Deduplication Strategy to ensure a "Golden State" of 54 unique chunks:
 
-Deterministic Content IDs: Instead of using generic auto-incrementing IDs (e.g., id_0, id_1), we generate IDs based on the Confluence Page ID and Paragraph Index (e.g., doc_12345_p0).
+Deterministic Content IDs: Generated from Confluence Page ID + Paragraph Index. Re-indexed pages overwrite old vectors instead of stacking(e.g., doc_12345_p0).
 
 Result: If a page is re-indexed, the new vectors accurately overwrite the old ones instead of stacking.
 
-The "Flush-on-Sync" Protocol: The run_full_sync() function performs an atomic delete_collection before each master rebuild.
+The "Flush-on-Sync" Protocol: The run_full_sync() function performs an atomic delete before each master rebuild, clearing orphoned chunks.
 
 Result: This clears out "orphaned" chunks from pages that may have been deleted or moved in Confluence.
 
