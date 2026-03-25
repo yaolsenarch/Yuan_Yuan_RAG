@@ -44,17 +44,17 @@ graph TD
 ## 🛡️ Data Integrity & Deduplication
 A common challenge in RAG systems is "Vector Bloat"—where re-running an ingestion pipeline creates duplicate embeddings for the same content. This system employs a Three-Tier Deduplication Strategy to ensure a "Golden State" of 54 unique chunks:
 
-Deterministic Content IDs: Generated from Confluence Page ID + Paragraph Index. Re-indexed pages overwrite old vectors instead of stacking(e.g., doc_12345_p0).
+**1. Deterministic Content IDs:** Generated from Confluence Page ID + Paragraph Index. Re-indexed pages overwrite old vectors instead of stacking(e.g., doc_12345_p0).
 
-Result: If a page is re-indexed, the new vectors accurately overwrite the old ones instead of stacking.
+    - **Result:** If a page is re-indexed, the new vectors accurately overwrite the old ones instead of stacking.
 
-The "Flush-on-Sync" Protocol: The run_full_sync() function performs an atomic delete before each master rebuild, clearing orphoned chunks.
+**2. The "Flush-on-Sync" Protocol:** The run_full_sync() function performs an atomic delete before each master rebuild, clearing orphoned chunks.
 
-Result: This clears out "orphaned" chunks from pages that may have been deleted or moved in Confluence.
+    - **Result:** This clears out "orphaned" chunks from pages that may have been deleted or moved in Confluence.
 
-Recursive "Seen" Registry: During the multi-tier crawl (Favorites → Children → Linked Pages), the system maintains a processed_ids set.
+**3. Recursive "Seen" Registry:** During the multi-tier crawl (Favorites → Children → Linked Pages), the system maintains a processed_ids set.
 
-Result: Even if a page is linked multiple times across different documents, it is only cleaned, chunked, and vectorized once.
+    - **Result:** Even if a page is linked multiple times across different documents, it is only cleaned, chunked, and vectorized once.
 
 ## 🛠️ Tech Stack
 - **Language:** Python
