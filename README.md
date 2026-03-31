@@ -40,8 +40,8 @@ graph TD
     J --> K[BERT Semantic Evaluation]
     K --> L[Final Answer + Confidence Score]
 ```    
-- **Pillar A (Ingestion):** An intelligent crawler that maps Confluence parent-child heirarchies via REST API and deep-scans page HTML to discover and ingest linked technical resources. It cleans unstructured content, and generates 384-dimensional vector embeddings using a local `all-MiniLM-L6-v2` transformer.
-- **Pillar B (Interface):** A RAG-based chat interface utilizing **Azure OpenAI (GPT-4o-mini)**. It includes a local **BERT-based semantic evaluator** to score the quality of AI responses.
+- **Pillar A (Ingestion):** An intelligent **recursive crawler** that maps Confluence parent-child heirarchies via REST API and deep-scans page HTML to discover and ingest linked technical resources. It cleans unstructured content, and generates 384-dimensional vector embeddings using a local `all-MiniLM-L6-v2` transformer for vectorized storage.
+- **Pillar B (Interface):** A high-precision **RAG-based chat interface** utilizing **Azure OpenAI (GPT-4o-mini)**. It manages dynamic Token Budgeting, performs Source-Aware context assembly, and executes a local **BERT-based semantic evaluator** to score the quality of AI responses.
 
 ## 🛡️ Data Integrity & Deduplication
 A common challenge in RAG systems is "Vector Bloat"—where re-running an ingestion pipeline creates duplicate embeddings for the same content. This system employs a Three-Tier Deduplication Strategy to ensure a "Golden State" of 54 unique chunks:
@@ -57,6 +57,8 @@ A common challenge in RAG systems is "Vector Bloat"—where re-running an ingest
 **3. Recursive "Seen" Registry:** During the multi-tier crawl (Favorites → Children → Linked Pages), the system maintains a processed_ids set.
 
     - Result: Even if a page is linked multiple times across different documents, it is only cleaned, chunked, and vectorized once.
+
+**4. Persistent Vector Storage:** Leverages ChromaDB with an `upsert` stategy and **Deterministic Chunk IDs**(`doc_{id}_p{p}`). This ensures that re-running the pipeline syncronizes database-updating exisitng entries, adding new documentation, and maintaining a 'Golden State' where the vector store is a 1:1 reflection of the current confluence knowledge base.
 
 ## 🛠️ Tech Stack
 - **Language:** Python
