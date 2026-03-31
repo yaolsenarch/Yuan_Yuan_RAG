@@ -40,7 +40,7 @@ graph TD
     J --> K[BERT Semantic Evaluation]
     K --> L[Final Answer + Confidence Score]
 ```    
-- **Pillar A (Ingestion):** An intelligent **recursive crawler** that maps Confluence parent-child heirarchies via REST API and deep-scans page HTML to discover and ingest linked technical resources. It cleans unstructured content, and generates 384-dimensional vector embeddings using a local `all-MiniLM-L6-v2` transformer for vectorized storage.
+- **Pillar A (Ingestion):** An intelligent **recursive crawler** that maps Confluence parent-child heirarchies via REST API and deep-scans page HTML to ingest linked  resources. It cleans unstructured content, and generates 384-dimensional vector embeddings using a local `all-MiniLM-L6-v2` transformer for vectorized storage. It utilizes Deterministic Chunking and Flush-on-Sync protocol to ensure the vector store remains a 1:1 synchronized reflection of the source documentation, even as pages grow and change. 
 - **Pillar B (Interface):** A high-precision **RAG-based chat interface** utilizing **Azure OpenAI (GPT-4o-mini)**. It manages dynamic Token Budgeting, performs Source-Aware context assembly, and executes a local **BERT-based semantic evaluator** to score the quality of AI responses.
 
 ## 🛡️ Data Integrity & Deduplication
