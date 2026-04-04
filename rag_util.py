@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 import os
 from dotenv import load_dotenv
 import tiktoken
-
+import re
 # 1. this finds the .env file and loads those variables into the environment so we can access them with os.getenv()
 load_dotenv()
 
@@ -144,6 +144,20 @@ def chunk_text(text, chunk_size=1000, overlap=100):
         start += (chunk_size - overlap)
     return chunks
 
+def is_list_item(text):
+    # This pattern looks for:
+    # 1. Roman Numerals (I., II., etc.)
+    # 2. Numbers (1., 2., 10.)
+    # 3. Letters (a., b., a), b))
+    # 4. Bullets (-, *, •)
+    list_patterns = [
+        r'^[IVXLC]+\.',          # Roman numerals: I., IV.
+        r'^\d+[\.\)]',           # Numbers: 1. or 1)
+        r'^[a-zA-Z][\.\)]',      # Letters: a. or a)
+        r'^[\-\*\•]'             # Bullets: -, *, •
+    ]
+    return any(re.match(pattern, text.strip()) for pattern in list_patterns)
+
 def chunk_text_by_paragraph(text, min_length=50, max_length=1500):
     """
     Improved Strategy: Slices text into logical paragraphs 
@@ -160,7 +174,7 @@ def chunk_text_by_paragraph(text, min_length=50, max_length=1500):
         p = p.strip()
         
         # Guardrail A: Ignore tiny fragments (e.g., "See also:", "Table 1")
-        if len(p) < min_length:
+        if len(p) < min_length and not is_list_item(p):
             continue
             
         # Guardrail B: Split oversized paragraphs 
