@@ -29,14 +29,29 @@ def clean_confluence_html(raw_html):
     # 2. Remove 'extra' tags that don't add meaning to text
     for extra in soup(["script", "style", "ac:structured-macro"]):
         extra.decompose()
-        
+    
+    # ✨ THE KEY FIX: Insert \n\n BEFORE block-level elements
+    # so they become paragraph separators after get_text() is called.
+    BLOCK_TAGS = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "div", "tr", "blockquote", "pre"]
+    
+    for tag in soup.find_all(BLOCK_TAGS):
+        # Prepend a double-newline marker before the tag's text content
+        tag.insert_before("\n\n")    
+
     # 3. Get the text, using a newline to separate paragraphs/headers
     # This prevents words from smashing together like 'HeadingParagraph'
     clean_text = soup.get_text(separator="\n")
     
     # 4. Basic whitespace cleanup
-    lines = [line.strip() for line in clean_text.splitlines() if line.strip()] # if... is a filter that only includes lines with actual text
-    return "\n".join(lines)
+    # lines = [line.strip() for line in clean_text.splitlines() if line.strip()] # if... is a filter that only includes lines with actual text
+    # return "\n".join(lines)
+    
+    # Normalize: collapse 3+ newlines down to 2, strip leading/trailing whitespace
+    clean_text = re.sub(r'\n{3,}', '\n\n', clean_text)
+    clean_text = re.sub(r'[ \t]+', ' ', clean_text)   # collapse inline spaces/tabs
+    clean_text = clean_text.strip()
+
+    return clean_text
 
 def extract_confluence_links(html_content):
     """
@@ -158,7 +173,7 @@ def is_list_item(text):
     ]
     return any(re.match(pattern, text.strip()) for pattern in list_patterns)
 
-def chunk_text_by_paragraph(text, min_length=50, max_length=1500):
+def chunk_text_by_paragraph(text, min_length=5, max_length=1500):
     """
     Improved Strategy: Slices text into logical paragraphs 
     to preserve technical context and code blocks.
@@ -176,7 +191,9 @@ def chunk_text_by_paragraph(text, min_length=50, max_length=1500):
         # Guardrail A: Ignore tiny fragments (e.g., "See also:", "Table 1")
         if len(p) < min_length and not is_list_item(p):
             continue
-            
+        elif len(p) < min_length and is_list_item(p):
+            print(f"🎯 SAVED SHORT LIST ITEM: {p[:30]}...") # Add this print    
+
         # Guardrail B: Split oversized paragraphs 
         # (prevents embedding truncation in all-MiniLM-L6-v2)
         if len(p) > max_length:
